@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.Size;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -40,13 +41,18 @@ public class User implements UserDetails{
 	@Column(unique = true)
 	private String email;
 	
+	
 	private String password;
 	
 	private String address;
 	
 	private String about;
 	private String gender;
+	
+	@Size(min=10,max=10)
+	@Column(unique=true)
 	private String phone;
+	
 	@Column(name="CreateAt")
     private Date   date;
     private boolean  active;
@@ -166,10 +172,9 @@ public class User implements UserDetails{
 	@Override
 	public String getUsername() {
 		return this.email;
-	}
+	}	
 	@Override
 	public boolean isAccountNonExpired() {
-		
 		return true;
 	}
 	@Override

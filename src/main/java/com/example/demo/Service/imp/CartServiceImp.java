@@ -67,9 +67,19 @@ public class CartServiceImp implements CartService {
 		         User user= this.userRepo.findByEmail(UserName).orElseThrow(() -> new ResourceNotFoundException("User not Found"));
 			     Product product= this.productRepo.findById(productId).orElseThrow(()->new ResourceNotFoundException("Product not Found"));
 			     
-		      if(!product.isStock()){
-		    	  new ResourceNotFoundException("Stock is out of Stock");
+			     if(!product.isLive()) {
+			    	 System.out.println("Product is not available");
+			    	 throw new ResourceNotFoundException("Not Available");
+			     }
+			     
+		      if(product.isStock() == false || product.getProductQuantity() == 0 ){
+		    	  
+		    	  throw new ResourceNotFoundException("Out of Stock");
 		      }
+//		      if(productQuntity == product.getProductQuantity() ) {
+//			    	 product.setStock(false);
+//			    	 product.setProductQuantity(0);
+//			  }	
 		      
 		      // create cartItem with product id and Quntity
 		      CartItem cartItem=new CartItem();		     

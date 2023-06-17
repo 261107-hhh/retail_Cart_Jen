@@ -76,6 +76,12 @@ public class CartServiceImp implements CartService {
 		    	  
 		    	  throw new ResourceNotFoundException("Out of Stock");
 		      }
+		      
+		      if(product.getProductQuantity() < productQuntity ){
+		    	  System.out.println("Product Quantity is not available");
+			    	 throw new ResourceNotFoundException("Not Available");
+		      }
+		      
 //		      if(productQuntity == product.getProductQuantity() ) {
 //			    	 product.setStock(false);
 //			    	 product.setProductQuantity(0);

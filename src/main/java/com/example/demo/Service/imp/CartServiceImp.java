@@ -43,127 +43,128 @@ import com.example.demo.payload.ItemRequest;
 //import com.ecom.payload.ProductDto;
 //import com.ecom.payload.ProductResponse;
 
-
-
 @Service
 public class CartServiceImp implements CartService {
-	
-		@Autowired
-	private ProductRepository productRepo;
-		@Autowired
-   private UserRepository userRepo;
-		@Autowired
-	private	CartRepository catRepo;
+
 	@Autowired
-		ModelMapper mapper;
-	
+	private ProductRepository productRepo;
+	@Autowired
+	private UserRepository userRepo;
+	@Autowired
+	private CartRepository catRepo;
+	@Autowired
+	ModelMapper mapper;
 
 	@Override
 	public CartDto addItem(ItemRequest item, String UserName) {
-		             
-		         int productId=item.getProductId();
-		         int productQuntity=item.getQuantity();
-		         
-		         User user= this.userRepo.findByEmail(UserName).orElseThrow(() -> new ResourceNotFoundException("User not Found"));
-			     Product product= this.productRepo.findById(productId).orElseThrow(()->new ResourceNotFoundException("Product not Found"));
-			     
-			     if(!product.isLive()) {
-			    	 System.out.println("Product is not available");
-			    	 throw new ResourceNotFoundException("Not Available");
-			     }
-			     
-		      if(product.isStock() == false || product.getProductQuantity() == 0 ){
-		    	  
-		    	  throw new ResourceNotFoundException("Out of Stock");
-		      }
-		      
-		      if(product.getProductQuantity() < productQuntity ){
-		    	  System.out.println("Product Quantity is not available");
-			    	 throw new ResourceNotFoundException("Not Available");
-		      }
-		      
+
+		int productId = item.getProductId();
+		int productQuntity = item.getQuantity();
+
+		User user = this.userRepo.findByEmail(UserName)
+				.orElseThrow(() -> new ResourceNotFoundException("User not Found"));
+		Product product = this.productRepo.findById(productId)
+				.orElseThrow(() -> new ResourceNotFoundException("Product not Found"));
+
+		if (!product.isLive()) {
+			System.out.println("Product is not available");
+			throw new ResourceNotFoundException("Not Available");
+		}
+
+		if (!product.isStock() || product.getProductQuantity() == 0) {
+			System.out.println("Product is out of stock");
+			throw new ResourceNotFoundException("Out of Stock");
+		}
+
+		if (product.getProductQuantity() < productQuntity) {
+			System.out.println("Product Quantity is not available");
+			throw new ResourceNotFoundException("Not Available");
+		}
+
 //		      if(productQuntity == product.getProductQuantity() ) {
 //			    	 product.setStock(false);
 //			    	 product.setProductQuantity(0);
 //			  }	
-		      
-		      // create cartItem with product id and Quntity
-		      CartItem cartItem=new CartItem();		     
-		      cartItem.setProduct(product);
-		      cartItem.setQuantity(productQuntity);
-		      cartItem.setTotalproductprize();
-		      
-		      // Getting CartItem from User
-		         Cart cart = user.getCart();
-	
-		         if(cart==null) {
-		        	 cart=new Cart();
-		        	 cart.setUser(user);
-		         }
-		        
-		         //add items in cart
-		    
-		         cartItem.setCart(cart);
-		         Set<CartItem> items = cart.getIteam();
-		         
-		         //items.add(cartItem);
-		         
-		         /*here we Check Item is available in Item table or not 
-		          * if item is available then we Increase Quntity else
-		          * add new item 
-		          * */
-		         AtomicReference<Boolean> flag=new AtomicReference<>(false);
-		        Set<CartItem> newitem= items.stream().map((i) -> {
-		        	
-		        	if(i.getProduct().getProductId()==product.getProductId()) {
-		        		
-		        		i.setQuantity(productQuntity);
-		        		i.setTotalproductprize();
-		        		flag.set(true);
-		        	}
-		        	
-		        	return i;
-		        }).collect(Collectors.toSet());
-		        
-		        if(flag.get()) {
-		        	items.clear();
-		        	items.addAll(newitem);
-		        	
-		        }
-		        else {
-		        	cartItem.setCart(cart);
-					items.add(cartItem);
-		        }
-		        // iteams.addAll(iteams);
-		             
-		      Cart updateCart = this.catRepo.save(cart);  
-		      
-		return this.mapper.map(updateCart,CartDto.class);
+
+		// create cartItem with product id and Quntity
+		CartItem cartItem = new CartItem();
+		cartItem.setProduct(product);
+		cartItem.setQuantity(productQuntity);
+		cartItem.setTotalproductprize();
+
+		// Getting CartItem from User
+		Cart cart = user.getCart();
+
+		if (cart == null) {
+			cart = new Cart();
+			cart.setUser(user);
+		}
+
+		// add items in cart
+
+		cartItem.setCart(cart);
+		Set<CartItem> items = cart.getIteam();
+
+		// items.add(cartItem);
+
+		/*
+		 * here we Check Item is available in Item table or not if item is available
+		 * then we Increase Quntity else add new item
+		 */
+		AtomicReference<Boolean> flag = new AtomicReference<>(false);
+		Set<CartItem> newitem = items.stream().map((i) -> {
+
+			if (i.getProduct().getProductId() == product.getProductId()) {
+
+				i.setQuantity(productQuntity);
+				i.setTotalproductprize();
+				flag.set(true);
+			}
+
+			return i;
+		}).collect(Collectors.toSet());
+
+		if (flag.get()) {
+			items.clear();
+			items.addAll(newitem);
+
+		} else {
+			cartItem.setCart(cart);
+			items.add(cartItem);
+		}
+		// iteams.addAll(iteams);
+
+		Cart updateCart = this.catRepo.save(cart);
+
+		return this.mapper.map(updateCart, CartDto.class);
 	}
 
 	@Override
 	public CartDto getCart(String UserName) {
-		User user = this.userRepo.findByEmail(UserName).orElseThrow(() -> new ResourceNotFoundException("User Not Found"));                 
-		Cart cart =  this.catRepo.findByUser(user).orElseThrow(()->new ResourceNotFoundException("Cart Not found"));
-	     return this.mapper.map(cart,CartDto.class) ;
+		User user = this.userRepo.findByEmail(UserName)
+				.orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
+		Cart cart = this.catRepo.findByUser(user).orElseThrow(() -> new ResourceNotFoundException("Cart Not found"));
+		return this.mapper.map(cart, CartDto.class);
 	}
 
 	@Override
 	public CartDto removeCartItem(String UserName, int productId) {
-		User user = this.userRepo.findByEmail(UserName).orElseThrow(() ->new ResourceNotFoundException("User not Found"));
-		     Cart cart=user.getCart();
-		     Set<CartItem> iteam = cart.getIteam();
-		     boolean removeIf = iteam.removeIf((item) ->item.getProduct().getProductId() ==productId);
-		       Cart updatecart = this.catRepo.save(cart); 
-		       /*remove if remove this iteam due it RelationShip with cartIteam and cart 
-		        * not Reflate in database for reflate in databes we have write orphanRemoval = true
-		        * in cart  for eg
-		        * 
-		        * @OneToMany(mappedBy = "cart" ,cascade=CascadeType.ALL,orphanRemoval = true)
-	                private Set<CartItem> iteam=new HashSet<>();
-		        */
-		       
-		return this.mapper.map(updatecart,CartDto.class);
+		User user = this.userRepo.findByEmail(UserName)
+				.orElseThrow(() -> new ResourceNotFoundException("User not Found"));
+		Cart cart = user.getCart();
+		Set<CartItem> iteam = cart.getIteam();
+		boolean removeIf = iteam.removeIf((item) -> item.getProduct().getProductId() == productId);
+		Cart updatecart = this.catRepo.save(cart);
+		/*
+		 * remove if remove this iteam due it RelationShip with cartIteam and cart not
+		 * Reflate in database for reflate in databes we have write orphanRemoval = true
+		 * in cart for eg
+		 * 
+		 * @OneToMany(mappedBy = "cart" ,cascade=CascadeType.ALL,orphanRemoval = true)
+		 * private Set<CartItem> iteam=new HashSet<>();
+		 */
+
+		return this.mapper.map(updatecart, CartDto.class);
 	}
 
 }

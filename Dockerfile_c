@@ -1,0 +1,6 @@
+FROM openjdk:17
+WORKDIR /app
+ADD target/retail-cart-docker.jar retail-cart-docker.jar 
+EXPOSE 9002
+COPY . .
+ENTRYPOINT ["java", "-jar","retail-cart-docker.jar"]

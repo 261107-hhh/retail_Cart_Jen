@@ -25,7 +25,7 @@ pipeline {
         }
          stage('Deploy') {
             steps {
-	            bat 'java -jar target/CartMicroservice-0.0.1-SNAPSHOT.jar'
+	            bat 'java -jar target/retail-cart-docker.jar'
                 echo 'mvn deployed'
             }
         }
